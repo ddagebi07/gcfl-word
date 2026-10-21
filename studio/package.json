@@ -1,0 +1,24 @@
+{
+  "name": "gcfl-word-studio",
+  "version": "0.8.7",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "RHWP_WITHOUT_HWPCTRL=1 vite",
+    "build": "tsc --noEmit && RHWP_WITHOUT_HWPCTRL=1 RHWP_DISABLE_EXTERNAL_WEBFONTS=1 vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.3.4",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.2"
+  },
+  "overrides": {
+    "serialize-javascript": "7.0.5"
+  },
+  "dependencies": {
+    "@noble/hashes": "^2.4.0",
+    "canvaskit-wasm": "^0.42.0"
+  },
+  "private": true
+}

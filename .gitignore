@@ -1,0 +1,7 @@
+node_modules/
+dist/
+studio/dist/
+desktop/app/
+desktop/out/
+*.log
+desktop/.cache/

@@ -20,33 +20,11 @@
     <header id="studio-header">
       <h1 class="visually-hidden" data-i18n="ui.studioHeader.srLabel">GCFL 한글 편집기</h1>
     <!-- 메뉴바 -->
-    <nav id="menu-bar" aria-label="주 메뉴">
+    <nav id="menu-bar" aria-label="GCFL 아카이브">
       <a class="gb-brand" href="./" title="GCFL 한글 편집기">
         <img class="gb-brand-icon" src="/favicon.png" alt="" width="28" height="28" />
         <span class="gb-brand-name">GCFL 한글 편집기</span>
       </a>
-      <span class="gb-divider"></span>
-      <button type="button" class="menu-command gb-btn" data-cmd="file:new-doc" title="새 문서 (Alt+N)"><span class="gb-ico">＋</span><span class="gb-lbl">새 문서</span></button>
-      <button type="button" class="menu-command gb-btn" data-cmd="file:open" title="HWP / HWPX 파일 열기"><span class="gb-ico">📂</span><span class="gb-lbl">열기</span></button>
-      <button type="button" class="menu-command gb-btn gb-primary" data-cmd="file:save" title="저장 (Ctrl+S)"><span class="gb-ico">💾</span><span class="gb-lbl">저장</span></button>
-      <div class="menu-item gb-menu" data-menu="export">
-        <span class="menu-title gb-btn" role="button" tabindex="0" title="다른 형식으로 내보내기"><span class="gb-ico">⇪</span><span class="gb-lbl">내보내기</span><span class="gb-caret">▾</span></span>
-        <div class="menu-dropdown">
-          <div class="md-item" data-cmd="file:save-as"><span class="md-label">다른 이름으로 저장…</span><span class="md-shortcut"></span></div>
-          <div class="md-sep"></div>
-          <div class="md-item" data-cmd="file:save-as-hwp"><span class="md-label">한글 문서 (.hwp)</span></div>
-          <div class="md-item" data-cmd="file:save-as-hwpx"><span class="md-label">한글 문서 (.hwpx)</span></div>
-          <div class="md-item" data-cmd="file:print-to-pdf"><span class="md-label">PDF 문서 (.pdf)</span></div>
-          <div class="md-item" data-cmd="file:export-doc"><span class="md-label">Word 문서 (.doc)</span></div>
-          <div class="md-item" data-cmd="file:export-html"><span class="md-label">웹 문서 (.html)</span></div>
-        </div>
-      </div>
-      <button type="button" class="menu-command gb-btn" data-cmd="file:print" title="인쇄 (Ctrl+P)"><span class="gb-ico">🖨</span><span class="gb-lbl">인쇄</span></button>
-      <span class="gb-divider"></span>
-      <button type="button" class="menu-command gb-btn gb-icon-only" data-cmd="edit:undo" title="되돌리기 (Ctrl+Z)"><span class="gb-ico">↶</span></button>
-      <button type="button" class="menu-command gb-btn gb-icon-only" data-cmd="edit:redo" title="다시 실행 (Ctrl+Shift+Z)"><span class="gb-ico">↷</span></button>
-      <button type="button" class="menu-command gb-btn gb-icon-only" data-cmd="edit:find" title="찾기 (Ctrl+F)"><span class="gb-ico">🔍</span></button>
-      <button type="button" class="menu-command gb-btn gb-icon-only" data-cmd="file:about" title="제품 정보 · 라이선스"><span class="gb-ico">ⓘ</span></button>
       <span class="gb-spacer"></span>
       <a class="gb-powered" href="https://gcflarchive.co.kr" target="_blank" rel="noopener" title="GCFL 아카이브">
         <span class="gb-powered-text">Powered by</span>
@@ -59,6 +37,31 @@
       <div id="icon-toolbar-viewport" class="tb-scroll-viewport" role="group" aria-label="기본 도구 상자 명령">
         <div class="tb-scroll-track">
           <div class="tb-group">
+            <button class="tb-btn" data-cmd="file:new-doc" title="새 문서 (Alt+N)"><span class="tb-icon-text tb-emoji">＋</span><span class="tb-label">새 문서</span></button>
+            <button class="tb-btn" data-cmd="file:open" title="HWP / HWPX 파일 열기"><span class="tb-icon-text tb-emoji">📂</span><span class="tb-label">열기</span></button>
+            <button class="tb-btn gcfl-accent" data-cmd="file:save" title="저장 (Ctrl+S)"><span class="tb-sprite icon-save"></span><span class="tb-label">저장</span></button>
+            <div class="tb-split gcfl-export">
+              <button class="tb-btn tb-split-arrow" title="다른 형식으로 내보내기" aria-haspopup="menu" aria-expanded="false"><span class="tb-icon-text tb-emoji">⇪</span><span class="tb-label">내보내기 ▾</span></button>
+              <div class="tb-split-menu" role="menu" aria-label="내보내기">
+                <button type="button" class="tb-split-item" role="menuitem" data-cmd="file:save-as">다른 이름으로 저장…</button>
+                <div class="tb-split-sep" role="separator"></div>
+                <button type="button" class="tb-split-item" role="menuitem" data-cmd="file:save-as-hwp">한글 문서 (.hwp)</button>
+                <button type="button" class="tb-split-item" role="menuitem" data-cmd="file:save-as-hwpx">한글 문서 (.hwpx)</button>
+                <button type="button" class="tb-split-item" role="menuitem" data-cmd="file:print-to-pdf">PDF 문서 (.pdf)</button>
+                <button type="button" class="tb-split-item" role="menuitem" data-cmd="file:export-doc">Word 문서 (.doc)</button>
+                <button type="button" class="tb-split-item" role="menuitem" data-cmd="file:export-html">웹 문서 (.html)</button>
+              </div>
+            </div>
+            <button class="tb-btn" data-cmd="file:print" title="인쇄 (Ctrl+P)"><span class="tb-sprite icon-print"></span><span class="tb-label">인쇄</span></button>
+          </div>
+          <span class="tb-sep"></span>
+          <div class="tb-group">
+            <button class="tb-btn" data-cmd="edit:undo" title="되돌리기 (Ctrl+Z)"><span class="tb-sprite icon-undo"></span><span class="tb-label">되돌리기</span></button>
+            <button class="tb-btn" data-cmd="edit:redo" title="다시 실행 (Ctrl+Shift+Z)"><span class="tb-sprite icon-redo"></span><span class="tb-label">다시 실행</span></button>
+            <button class="tb-btn" data-cmd="edit:find" title="찾기 (Ctrl+F)"><span class="tb-sprite icon-find"></span><span class="tb-label">찾기</span></button>
+          </div>
+          <span class="tb-sep"></span>
+          <div class="tb-group">
             <button class="tb-btn" data-cmd="edit:cut" title="오려두기 (Ctrl+X)"><span class="tb-sprite icon-cut"></span><span class="tb-label">오려두기</span></button>
             <button class="tb-btn" data-cmd="edit:copy" title="복사하기 (Ctrl+C)"><span class="tb-sprite icon-copy"></span><span class="tb-label">복사하기</span></button>
             <button class="tb-btn tb-paste" data-cmd="edit:paste" title="붙이기 (Ctrl+V)"><span class="tb-sprite icon-paste"></span><span class="tb-label">붙이기</span></button>
@@ -67,6 +70,10 @@
           <div class="tb-group">
             <button class="tb-btn gcfl-accent" data-cmd="insert:image" title="사진 넣기 — 넣은 뒤 모서리를 끌어 크기를 바꿀 수 있어요"><span class="tb-sprite icon-image"></span><span class="tb-label">사진 넣기</span></button>
             <button class="tb-btn" data-cmd="format:object-properties" title="선택한 사진의 크기·위치 설정 (P)"><span class="tb-sprite icon-obj-props"></span><span class="tb-label">사진 크기</span></button>
+          </div>
+          <span class="tb-sep"></span>
+          <div class="tb-group">
+            <button class="tb-btn" data-cmd="file:about" title="제품 정보 · 라이선스"><span class="tb-sprite icon-help"></span><span class="tb-label">정보</span></button>
           </div>
         </div>
       </div>

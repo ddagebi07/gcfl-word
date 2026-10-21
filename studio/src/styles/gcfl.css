@@ -115,3 +115,11 @@
 #style-bar .sb-size { width: 44px !important; flex: 0 0 auto; }
 #style-bar .sb-ls-group { width: auto; }
 #style-bar .sb-command-track { flex: 0 0 auto; margin-left: 8px; }
+
+/* 헤더는 크레딧 전용 — 슬림하게 */
+#menu-bar { height: 40px; }
+.gb-brand-icon { width: 26px; height: 26px; }
+.gb-powered img { height: 20px; }
+#icon-toolbar .tb-emoji { font-size: 22px; line-height: 24px; }
+#icon-toolbar .gcfl-export .tb-split-arrow { min-width: 64px; }
+#icon-toolbar .gcfl-export .tb-split-menu { min-width: 190px; }

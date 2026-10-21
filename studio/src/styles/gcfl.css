@@ -123,3 +123,6 @@
 #icon-toolbar .tb-emoji { font-size: 22px; line-height: 24px; }
 #icon-toolbar .gcfl-export .tb-split-arrow { min-width: 64px; }
 #icon-toolbar .gcfl-export .tb-split-menu { min-width: 190px; }
+
+.gcfl-only-desktop { display: none !important; }
+.gcfl-desktop .gcfl-only-desktop { display: inline-flex !important; }

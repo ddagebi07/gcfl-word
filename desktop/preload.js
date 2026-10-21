@@ -19,3 +19,10 @@ window.addEventListener('drop', (e) => {
 }, true);
 
 contextBridge.exposeInMainWorld('gcflDesktop', { platform: process.platform });
+
+// 데스크톱 셸에서만 보이는 '기본 앱 설정' 버튼
+window.addEventListener('DOMContentLoaded', () => {
+  document.documentElement.classList.add('gcfl-desktop');
+  const btn = document.getElementById('gcfl-default-app');
+  if (btn) btn.addEventListener('click', () => ipcRenderer.send('gcfl:default-apps'));
+});

@@ -121,6 +121,11 @@ ipcMain.on('gcfl:opened', (_e, file) => {
   if (typeof file === 'string' && file) lastDir = path.dirname(file);
 });
 
+ipcMain.on('gcfl:default-apps', () => {
+  // Windows 10 은 기본 앱을 프로그램이 직접 바꾸지 못하게 막으므로 설정 화면을 열어 준다.
+  if (process.platform === 'win32') shell.openExternal('ms-settings:defaultapps');
+});
+
 const gotLock = app.requestSingleInstanceLock();
 if (!gotLock) {
   app.quit();

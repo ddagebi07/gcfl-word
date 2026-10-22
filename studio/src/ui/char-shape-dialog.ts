@@ -28,8 +28,7 @@
 import type { WasmBridge } from '@/core/wasm-bridge';
 import type { EventBus } from '@/core/event-bus';
 import type { CharProperties } from '@/core/types';
-import { REGISTERED_FONTS } from '@/core/font-loader';
-import { getLocalFonts } from '@/core/local-fonts';
+import { GOV_FACE_NAMES, govFaceOf } from '@/core/gcfl-font';
 import { enableDialogDrag } from './dialog-drag';
 
 import { t as i18nText } from '../i18n/index.ts';
@@ -37,8 +36,7 @@ const LANG_NAMES = [i18nText('dialog.charShape.label'), i18nText('dialog.charSha
 
 /** 웹폰트 + 로컬 글꼴을 합친 목록 (정렬됨) */
 function buildFontList(): string[] {
-  const fonts = Array.from(REGISTERED_FONTS).sort((a, b) => a.localeCompare(b, 'ko'));
-  return fonts;
+  return [...GOV_FACE_NAMES]; // GCFL: Pretendard GOV 9가지 굵기만
 }
 
 /** 속성 아이콘 정의: HWP 원본의 가 문자 변형 */
@@ -332,19 +330,6 @@ export class CharShapeDialog {
     });
     this.fontSelect.appendChild(webGroup);
 
-    // 로컬 글꼴 optgroup (감지된 경우에만)
-    const localFonts = getLocalFonts();
-    if (localFonts.length > 0) {
-      const localGroup = document.createElement('optgroup');
-      localGroup.label = '로컬 글꼴';
-      localFonts.forEach(f => {
-        const opt = document.createElement('option');
-        opt.value = f;
-        opt.textContent = f;
-        localGroup.appendChild(opt);
-      });
-      this.fontSelect.appendChild(localGroup);
-    }
     langFontRow.appendChild(this.fontSelect);
     langSection.appendChild(langFontRow);
 
@@ -797,15 +782,8 @@ export class CharShapeDialog {
     const arrIdx = this.currentLang === 0 ? 0 : this.currentLang - 1;
 
     const families = this.props.fontFamilies || [];
-    const fontName = families[arrIdx] || '';
+    const fontName = families[arrIdx] ? govFaceOf(families[arrIdx]) : '';
     this.fontSelect.value = fontName;
-    if (this.fontSelect.value !== fontName && fontName) {
-      const opt = document.createElement('option');
-      opt.value = fontName;
-      opt.textContent = fontName;
-      this.fontSelect.appendChild(opt);
-      this.fontSelect.value = fontName;
-    }
 
     const ratios = this.props.ratios || [100, 100, 100, 100, 100, 100, 100];
     const spacings = this.props.spacings || [0, 0, 0, 0, 0, 0, 0];

@@ -212,68 +212,9 @@ export interface DeferredPaginationResult {
   pageCount: number;
 }
 
-import {
-  fontFamilyCandidatesForDisplay,
-  formatCssFontFamilyList,
-  parseCssFontFamilyList,
-  resolveFont,
-} from './font-substitution';
+import { forceGovCssFont } from './gcfl-font';
 import { rememberRawCanvasFontDescriptor } from './canvas-font-raw';
 import type { FileSystemFileHandleLike } from '@/command/file-system-access';
-
-/**
- * CSS font 문자열에서 font-family를 추출하여 폰트 치환을 적용한다.
- *
- * 입력: 'bold 14.5px "안상수2006가는", sans-serif'
- * 출력: 'bold 14.5px "돋움", sans-serif'
- *
- * [#6600] **들어온 체인을 버리지 않는다.** 엔진(`renderer::canvas_font_family_chain`)이
- * 이미 설치 face 별칭을 담은 체인을 준다 — `"한양중고딕", "HY중고딕", "HYGothic",
- * "HYGothic-Medium", "HCR Dotum", "함초롬돋움", 'Malgun Gothic', …` 처럼. 종전에는 첫
- * 이름만 떼어내 studio 체인으로 **통째로 대체**해서, 그 별칭들이 사라지고 곧바로
- * `Malgun Gothic` 으로 떨어졌다. Windows DirectWrite 는 `-Medium` 을 스타일 토큰으로
- * 떼어내 `HY중고딕`·`HYGothic-Medium` 둘 다 해석하지 못하고 `HYGothic` 만 해석하므로
- * (`src/renderer/mod.rs:1674` 실측 주석), 별칭이 빠지면 `【`·`『` 가 Malgun 의 반각
- * (0.518em) 글리프로 폴백해 1em 상자 왼쪽에 붙는다.
- *
- * 그래서 순서를 이렇게 합친다:
- *   1. studio 문서 치환이 고른 face (`휴먼명조` → `HY신명조` 같은 판정을 보존)
- *   2. 엔진이 준 체인 그대로 (설치 별칭 → generic 순서가 이미 옳다)
- *   3. studio 체인의 나머지 (엔진 체인이 없거나 짧을 때의 backstop)
- */
-function substituteCssFontFamily(cssFont: string): string {
-  const pxIdx = cssFont.indexOf('px ');
-  if (pxIdx < 0) return cssFont;
-
-  const prefix = cssFont.substring(0, pxIdx + 3);
-  const familyPart = cssFont.substring(pxIdx + 3);
-
-  const incoming = parseCssFontFamilyList(familyPart);
-  const primary = incoming[0];
-  if (!primary) return cssFont;
-
-  const studioChain = fontFamilyCandidatesForDisplay(primary, 0, 0);
-  const merged: string[] = [];
-  const seen = new Set<string>();
-  const push = (name: string) => {
-    const key = name.toLocaleLowerCase('en-US');
-    if (!name || seen.has(key)) return;
-    seen.add(key);
-    merged.push(name);
-  };
-  if (studioChain[0]) push(studioChain[0]);
-  // 표시 정책이 제외한 원 face를 엔진 체인에서 다시 넣지 않는다. 예를 들어
-  // 휴먼명조 → HY신명조 치환 후 원 face가 남으면, HY신명조가 없는 macOS에서
-  // legacy 휴먼명조를 선택해 한글이 .notdef로 그려지고 뒤의 fallback에 도달하지 않는다.
-  const primaryAllowed = resolveFont(primary, 0, 0) === primary
-    || studioChain.some(name => name.toLocaleLowerCase('en-US') === primary.toLocaleLowerCase('en-US'));
-  for (const name of incoming) {
-    if (name === primary && !primaryAllowed) continue;
-    push(name);
-  }
-  for (const name of studioChain.slice(1)) push(name);
-  return prefix + formatCssFontFamilyList(merged);
-}
 
 let canvasFontSubstitutionInstalled = false;
 
@@ -293,7 +234,7 @@ function installCanvasFontSubstitution(): void {
       return descriptor.get!.call(this);
     },
     set(value: string) {
-      descriptor.set!.call(this, scopedHostCanvasFont(String(value)) ?? substituteCssFontFamily(String(value)));
+      descriptor.set!.call(this, forceGovCssFont(String(value)));
     },
   });
   canvasFontSubstitutionInstalled = true;
@@ -424,7 +365,7 @@ export class WasmBridge {
       if (!ctx) {
         ctx = document.createElement('canvas').getContext('2d');
       }
-      const resolved = scopedHostCanvasFont(font) ?? (canvasFontSubstitutionInstalled ? font : substituteCssFontFamily(font));
+      const resolved = forceGovCssFont(font);
       if (resolved !== lastFont) {
         ctx!.font = resolved;
         lastFont = resolved;

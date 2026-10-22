@@ -1932,7 +1932,7 @@ const catalog = {
   "ui.scrollContainer.ariaLabel": "문서 페이지",
   "ui.studioHeader.srLabel": "GCFL 한글 편집기",
   "ui.styleBar.fieldLabel.x76905b": "크기",
-  "ui.styleBar.fieldLabel.x7c16df": "글꼴",
+  "ui.styleBar.fieldLabel.x7c16df": "Pretendard GOV",
   "ui.styleBar.fieldLabel.x9c591b": "스타일",
   "ui.styleBar.fieldLabel.xb3e0f6": "줄 간격",
   "ui.styleBar.fieldLabel.xbf869c": "언어",

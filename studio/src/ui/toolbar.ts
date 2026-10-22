@@ -14,7 +14,10 @@ interface FontMenuEntry {
   label: string;
 }
 
-const BASE_FONTS = ['함초롬바탕', '함초롬돋움', '맑은 고딕', '나눔고딕', '바탕', '돋움', '궁서'];
+import { GOV_FACE_NAMES, GOV_WEIGHTS, govFaceOf, loadGovFaces } from '@/core/gcfl-font';
+
+// GCFL: 글꼴은 Pretendard GOV 9가지 굵기뿐
+const BASE_FONTS: readonly string[] = GOV_FACE_NAMES;
 
 const FONT_MENU_CATEGORIES: ReadonlyArray<{ id: FontMenuCategory; label: string }> = [
   { id: 'all', label: t('dialog.toolbar.label') },
@@ -273,40 +276,7 @@ export class Toolbar {
     this.fontName.addEventListener('change', () => {
       const name = this.fontName.value;
       if (!name) return;
-
-      // 대표 글꼴 세트 선택인지 확인
-      const fontSet = this.findFontSetByName(name);
-      if (fontSet) {
-        this.applyFontSet(fontSet);
-        return;
-      }
-
-      const langVal = this.fontLang.value;
-      if (langVal === 'all') {
-        // 전체 언어 일괄 적용
-        const fontId = this.wasm.findOrCreateFontId(name);
-        if (fontId >= 0) {
-          this.eventBus.emit('format-char', { fontId } as CharProperties);
-        }
-      } else {
-        // 특정 언어만 적용 (fontIds 배열)
-        const langIdx = parseInt(langVal, 10);
-        const fontId = this.wasm.findOrCreateFontIdForLang(langIdx, name);
-        if (fontId >= 0 && this.lastFontFamilies) {
-          // 현재 fontIds를 기반으로 해당 언어만 교체
-          const ids: number[] = [];
-          for (let i = 0; i < 7; i++) {
-            if (i === langIdx) {
-              ids.push(fontId);
-            } else {
-              // 다른 언어는 현재 글꼴 ID 유지 (기존 값 조회)
-              const existingName = this.lastFontFamilies[i] || this.lastFontFamilies[0];
-              ids.push(this.wasm.findOrCreateFontIdForLang(i, existingName));
-            }
-          }
-          this.eventBus.emit('format-char', { fontIds: ids } as CharProperties);
-        }
-      }
+      void loadGovFaces([name]).then(() => this.applyFontName(name));
     });
 
     // 언어 선택 변경 시 해당 언어의 글꼴명을 드롭다운에 표시
@@ -343,6 +313,46 @@ export class Toolbar {
       this.fontSize.value = String(newPt);
       this.eventBus.emit('format-char', { fontSize: Math.round(newPt * 100) } as CharProperties);
     });
+  }
+
+  /** 글꼴(굵기) 선택을 문서에 적용한다. */
+  private applyFontName(name: string): void {
+    {
+
+      // 대표 글꼴 세트 선택인지 확인
+      const fontSet = this.findFontSetByName(name);
+      if (fontSet) {
+        this.applyFontSet(fontSet);
+        return;
+      }
+
+      const langVal = this.fontLang.value;
+      if (langVal === 'all') {
+        // 전체 언어 일괄 적용
+        const fontId = this.wasm.findOrCreateFontId(name);
+        if (fontId >= 0) {
+          this.eventBus.emit('format-char', { fontId } as CharProperties);
+        }
+      } else {
+        // 특정 언어만 적용 (fontIds 배열)
+        const langIdx = parseInt(langVal, 10);
+        const fontId = this.wasm.findOrCreateFontIdForLang(langIdx, name);
+        if (fontId >= 0 && this.lastFontFamilies) {
+          // 현재 fontIds를 기반으로 해당 언어만 교체
+          const ids: number[] = [];
+          for (let i = 0; i < 7; i++) {
+            if (i === langIdx) {
+              ids.push(fontId);
+            } else {
+              // 다른 언어는 현재 글꼴 ID 유지 (기존 값 조회)
+              const existingName = this.lastFontFamilies[i] || this.lastFontFamilies[0];
+              ids.push(this.wasm.findOrCreateFontIdForLang(i, existingName));
+            }
+          }
+          this.eventBus.emit('format-char', { fontIds: ids } as CharProperties);
+        }
+      }
+    }
   }
 
   /** 글자색 피커 이벤트 */
@@ -555,15 +565,12 @@ export class Toolbar {
     this.fontMenuCategory = this.fontMenuDocumentFonts.length > 0 ? 'document' : 'current';
     this.closeFontMenu();
     this.fontName.replaceChildren();
-    for (const name of BASE_FONTS) {
-      this.ensureFontOption(name);
+    for (const w of GOV_WEIGHTS) {
+      const opt = document.createElement('option');
+      opt.value = w.face;
+      opt.textContent = w.label;
+      this.fontName.appendChild(opt);
     }
-    if (docFonts?.length) {
-      for (const name of docFonts) {
-        this.ensureFontOption(name);
-      }
-    }
-    this.populateFontSetOptions();
   }
 
   private refreshFontDropdown(): void {
@@ -649,8 +656,7 @@ export class Toolbar {
     // 글꼴명 — 선택된 언어 카테고리에 따라 표시
     const displayFont = this.getDisplayFontFamily(props);
     if (displayFont) {
-      this.ensureFontOption(displayFont);
-      this.fontName.value = displayFont;
+      this.fontName.value = govFaceOf(displayFont);
     }
 
     // 글자 크기 (HWPUNIT → pt, 1pt = 100 HWPUNIT)
@@ -708,8 +714,7 @@ export class Toolbar {
       }
     }
     if (displayFont) {
-      this.ensureFontOption(displayFont);
-      this.fontName.value = displayFont;
+      this.fontName.value = govFaceOf(displayFont);
     }
   }
 
@@ -739,13 +744,8 @@ export class Toolbar {
   }
 
   /** native select에 없는 글꼴은 상태 동기화용 option만 추가한다. */
-  private ensureFontOption(name: string): void {
-    const normalized = name.trim();
-    if (!normalized || Array.from(this.fontName.options).some(option => option.value === normalized)) return;
-    const opt = document.createElement('option');
-    opt.value = normalized;
-    opt.textContent = normalized;
-    this.fontName.appendChild(opt);
+  private ensureFontOption(_name: string): void {
+    // 목록은 Pretendard GOV 9가지로 고정이라 새 항목을 만들지 않는다.
   }
 
   private normalizeFontNames(names: readonly string[]): string[] {
@@ -770,6 +770,7 @@ export class Toolbar {
 
   /** 한컴처럼 범주를 먼저 고르는 글꼴 메뉴를 연다. */
   private openFontMenu(): void {
+    void loadGovFaces(GOV_FACE_NAMES); // 미리보기용으로 9가지 굵기를 불러온다(처음 한 번)
     if (this.fontMenu) return;
     const menu = document.createElement('div');
     menu.className = 'font-picker-menu';
@@ -845,7 +846,8 @@ export class Toolbar {
     if (!heading || !list) return;
     const category = FONT_MENU_CATEGORIES.find(item => item.id === this.fontMenuCategory)!;
     const entries = this.getFontMenuEntries(this.fontMenuCategory);
-    heading.textContent = `${category.label} (${entries.length})`;
+    void category;
+    heading.textContent = `Pretendard GOV (${entries.length})`;
     for (const button of menu.querySelectorAll<HTMLButtonElement>('.font-picker-category')) {
       const active = button.dataset.category === this.fontMenuCategory;
       button.classList.toggle('active', active);
@@ -866,7 +868,8 @@ export class Toolbar {
         button.setAttribute('role', 'option');
         button.setAttribute('aria-selected', String(entry.value === this.fontName.value));
         button.textContent = entry.label;
-        button.title = entry.label;
+        button.title = `Pretendard GOV ${entry.label}`;
+        button.style.setProperty('font-family', `"${entry.value}", "Pretendard GOV", sans-serif`, 'important'); // 미리보기
         button.addEventListener('click', () => this.selectFontMenuEntry(entry.value));
         fragment.appendChild(button);
       }
@@ -874,34 +877,9 @@ export class Toolbar {
     list.replaceChildren(fragment);
   }
 
-  private getFontMenuEntries(category: FontMenuCategory): FontMenuEntry[] {
-    const current = this.fontName.value && !this.fontName.value.startsWith('__fontset__')
-      ? [{ value: this.fontName.value, label: this.fontName.value }]
-      : [];
-    const documentFonts = this.fontMenuDocumentFonts.map(name => ({ value: name, label: name }));
-    const baseFonts = BASE_FONTS.map(name => ({ value: name, label: name }));
-    const fontSets = userSettings.getAllFontSets().map(fontSet => ({
-      value: `__fontset__${fontSet.name}`,
-      label: `◆ ${fontSet.name}`,
-    }));
-    switch (category) {
-      case 'current':
-        return current;
-      case 'document':
-        return documentFonts;
-      case 'fontSets':
-        return fontSets;
-      case 'system':
-        return getLocalFonts().map(name => ({ value: name, label: name }));
-      case 'all':
-        return this.uniqueFontMenuEntries([
-          ...current,
-          ...documentFonts,
-          ...baseFonts,
-          ...fontSets,
-          ...getLocalFonts().map(name => ({ value: name, label: name })),
-        ]);
-    }
+  private getFontMenuEntries(_category: FontMenuCategory): FontMenuEntry[] {
+    // GCFL: Pretendard GOV 9가지 굵기만
+    return GOV_WEIGHTS.map(w => ({ value: w.face, label: w.label }));
   }
 
   private uniqueFontMenuEntries(entries: readonly FontMenuEntry[]): FontMenuEntry[] {

@@ -260,84 +260,10 @@ export function getWebFontSupplySnapshotWithRules(fontName: string): WebFontSupp
 export async function loadWebFonts(
   docFonts?: string[],
   onProgress?: (loaded: number, total: number) => void,
-  options?: WebFontLoadOptions,
+  _options?: WebFontLoadOptions,
 ): Promise<void> {
-  // 0) 문서 요청명과 필수 글꼴을 @font-face 등록 전에 감지한다.
-  // 이미 등록한 face가 있으면 브라우저가 그 face를 시스템 글꼴처럼 보고할 수 있으므로
-  // 해당 이름은 재감지하지 않는다.
-  const targetNames = [...(docFonts ?? []), ...CRITICAL_FONTS];
-  // legacy 이름(`한양중고딕`)은 stand-in 웹폰트로만 공급되므로 치환 대상(`HY중고딕`)까지
-  // 감지 후보에 넣어야 설치 face를 표시 체인 앞에 둘 수 있다.
-  const detectionNames = [
-    ...targetNames,
-    ...targetNames.flatMap(name => projectedSubstituteTargets(name).map(target => target.face)),
-  ];
-  detectOSFonts(detectionNames);
-  const systemFontNames = [...new Set(targetNames.filter(isDetectedOSFont))];
-  if (systemFontNames.length > 0) {
-    console.debug(`[FontLoader][debug] 시스템 글꼴 사용: ${systemFontNames.join(', ')}`);
-  }
-
-  // 1) 문서에서 요청한 글꼴과 초기 필수 글꼴만 대상으로 삼는다.
-  // 시스템 글꼴이 감지되면 CSS 규칙도 추가하지 않아 원격 face가 이를 덮어쓰지 않는다.
-  const targetSet = new Set(targetNames.map(normalizeFontFamily));
-  const requestedEntries = selectableFontList(options).filter(entry => (
-    targetSet.has(normalizeFontFamily(entry.name)) && !isDetectedOSFont(entry.name)
-  ));
-  if (requestedEntries.length > 0) {
-    console.debug(
-      `[FontLoader][debug] CDN 후보: ${requestedEntries.map(entry => entry.name).join(', ')}`,
-    );
-  }
-  registerFontFaces(requestedEntries, options);
-
-  // 2) 같은 파일을 쓰더라도 새 별칭은 FontFace에 별도로 등록한다.
-  // 이미 받아 둔 URL은 브라우저 캐시를 사용하므로 추가 네트워크 전송은 발생하지 않는다.
-  const toLoad = requestedEntries.filter(entry => !loadedFontFaceKeys.has(fontFaceKey(entry)));
-  const entriesByFile = new Map<string, FontEntry[]>();
-  for (const entry of toLoad) {
-    const entries = entriesByFile.get(entry.file) ?? [];
-    entries.push(entry);
-    entriesByFile.set(entry.file, entries);
-  }
-  const uniqueToLoad = [...entriesByFile.values()].map(entries => entries[0]);
-
-  if (uniqueToLoad.length === 0) return;
-
-  const total = uniqueToLoad.length;
-  console.log(`[FontLoader] 웹폰트 로드 시작: ${total}개 파일 (이미 요청함: ${loadedFiles.size}개)`);
-
-  let loaded = 0;
-  let failed = 0;
-  const BATCH = 4;
-
-  for (let i = 0; i < uniqueToLoad.length; i += BATCH) {
-    const batch = uniqueToLoad.slice(i, i + BATCH);
-    await Promise.all(batch.map(async (f) => {
-      const entries = entriesByFile.get(f.file) ?? [f];
-      const fontNames = entries.map(entry => entry.name).join(', ');
-      console.debug(`[FontLoader][debug] CDN 로드 시작: ${fontNames} <- ${f.file}`);
-      try {
-        for (const entry of entries) {
-          const fmt = entry.format ?? 'woff2';
-          const face = new FontFace(entry.name, `url(${entry.file}) format('${fmt}')`);
-          const result = await face.load();
-          document.fonts.add(result);
-          loadedFontFaceKeys.add(fontFaceKey(entry));
-        }
-        loadedFiles.add(f.file);
-        loaded++;
-        console.debug(`[FontLoader][debug] CDN 로드 성공: ${fontNames} <- ${f.file}`);
-      } catch (error) {
-        failed++;
-        console.debug(`[FontLoader][debug] CDN 로드 실패: ${fontNames} <- ${f.file}`, error);
-      }
-      onProgress?.(loaded + failed, total);
-    }));
-    if (i + BATCH < uniqueToLoad.length) {
-      await new Promise(r => setTimeout(r, 0));
-    }
-  }
-
-  console.log(`[FontLoader] 폰트 로드 완료: ${loaded}개 성공, ${failed}개 실패 (총 ${loadedFiles.size}개 파일 요청)`);
+  // GCFL: 글꼴은 Pretendard GOV(굵기 9가지)뿐이다. 문서가 요구한 이름이 무엇이든 그 굵기만 불러온다.
+  const { loadGovFaces } = await import('./gcfl-font');
+  await loadGovFaces(docFonts ?? []);
+  onProgress?.(1, 1);
 }

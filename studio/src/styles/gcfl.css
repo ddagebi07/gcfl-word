@@ -131,3 +131,14 @@
 .gb-save-as { height: 30px; padding: 0 10px; border: 1px solid rgba(255,255,255,.22); font-size: 13px; }
 .gb-save-as .gb-ico { font-size: 14px; }
 @media (max-width: 900px) { .gb-save-as .gb-lbl { display: none; } }
+
+/* 글꼴: 화면 전체를 Pretendard GOV 로 (파일은 쓰는 굵기만 내려받는다) */
+html, body, button, input, select, textarea, .dialog, .menu-dropdown {
+  font-family: "Pretendard GOV UI", "Pretendard GOV", system-ui, sans-serif !important;
+}
+.font-picker-category, .font-picker-categories { display: none !important; }
+.font-picker-menu { grid-template-columns: minmax(260px, 300px) !important; width: 300px !important; height: auto !important; max-height: min(420px, calc(100vh - 8px)); }
+.font-picker-option { min-height: 36px; font-size: 14px; text-align: left; }
+.font-picker-menu { grid-template-columns: minmax(240px, 280px) !important; width: 280px !important; height: auto !important; max-height: min(430px, calc(100vh - 8px)); }
+.font-picker-option { min-height: 38px; font-size: 16px; text-align: left; }
+#font-name { width: 150px; }

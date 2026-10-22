@@ -126,3 +126,8 @@
 
 .gcfl-only-desktop { display: none !important; }
 .gcfl-desktop .gcfl-only-desktop { display: inline-flex !important; }
+
+/* 상단바의 저장 옵션 (PDF / HWPX) */
+.gb-save-as { height: 30px; padding: 0 10px; border: 1px solid rgba(255,255,255,.22); font-size: 13px; }
+.gb-save-as .gb-ico { font-size: 14px; }
+@media (max-width: 900px) { .gb-save-as .gb-lbl { display: none; } }
